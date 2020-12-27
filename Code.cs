@@ -21,9 +21,9 @@ namespace PBL_SUDOKU
 			int iter = 0;
 			int random;
 			int width = 0, lenght = 0;
-			
-			ConsoleKeyInfo key;
 
+			ConsoleKeyInfo key;
+			Console.SetWindowSize(60, 20);
 			Console.WriteLine("  1 2 3 4 5 6 7 8 9 ");
 			Console.WriteLine(" +-----+-----+-----+");
 			Console.WriteLine("1|     |     |     |");
@@ -82,63 +82,64 @@ namespace PBL_SUDOKU
 						case 1:
 							piece[0, 0] = rand.Next(0, 2);
 							piece[1, 0] = rand.Next(0, 2);
-							lenght = 2;
+							lenght = 1;
 							break;
 						case 2:
 							piece[0, 0] = rand.Next(0, 2);
 							piece[0, 1] = rand.Next(0, 2);
-							width = 2;
+							width = 1;
 							break;
 						case 3:
 							piece[0, 0] = rand.Next(0, 2);
 							piece[1, 0] = rand.Next(0, 2);
 							piece[2, 0] = rand.Next(0, 2);
-							lenght = 4;
+							lenght = 2;
 							break;
 						case 4:
 							piece[0, 0] = rand.Next(0, 2);
 							piece[0, 1] = rand.Next(0, 2);
 							piece[0, 2] = rand.Next(0, 2);
-							lenght = 4;
+							width = 2;
 							break;
 						case 5:
 							piece[0, 0] = rand.Next(0, 2);
 							piece[1, 0] = rand.Next(0, 2);
 							piece[0, 1] = rand.Next(0, 2);
-							width = 2;
-							lenght = 2;
+							width = 1;
+							lenght = 1;
 							break;
 						case 6:
 							piece[0, 0] = rand.Next(0, 2);
 							piece[0, 1] = rand.Next(0, 2);
 							piece[1, 1] = rand.Next(0, 2);
-							width = 2;
-							lenght = 2;
+							width = 1;
+							lenght = 1;
 							break;
 						case 7:
 							piece[0, 0] = rand.Next(0, 2);
 							piece[1, 0] = rand.Next(0, 2);
 							piece[1, 1] = rand.Next(0, 2);
-							width = 2;
-							lenght = 2;
+							width = 1;
+							lenght = 1;
 							break;
 						case 8:
 							piece[0, 1] = rand.Next(0, 2);
 							piece[1, 0] = rand.Next(0, 2);
 							piece[1, 1] = rand.Next(0, 2);
-							width = 2;
-							lenght = 2;
+							width = 1;
+							lenght = 1;
 							break;
 						case 9:
 							piece[0, 0] = rand.Next(0, 2);
 							piece[0, 1] = rand.Next(0, 2);
 							piece[1, 0] = rand.Next(0, 2);
 							piece[1, 1] = rand.Next(0, 2);
-							width = 2;
-							lenght = 2;
+							width = 1;
+							lenght = 1;
 							break;
 					}
 					iter++;
+					cursorx = 10; cursory = 10;
 				}
 				//parçayı cursora takma
 				for (int r = 0; r < 3; r++)
@@ -199,9 +200,9 @@ namespace PBL_SUDOKU
 				Console.SetCursorPosition(cursorx, cursory);
 				key = Console.ReadKey(true);
 				if (key.Key == ConsoleKey.UpArrow && cursory > 2) cursory -= 2;
-				else if (key.Key == ConsoleKey.DownArrow && cursory+lenght < 18) cursory += 2;
+				else if (key.Key == ConsoleKey.DownArrow && cursory + lenght * 2 < 18) cursory += 2;
 				else if (key.Key == ConsoleKey.LeftArrow && cursorx > 2) cursorx -= 2;
-				else if (key.Key == ConsoleKey.RightArrow && cursorx+width < 18) cursorx += 2;
+				else if (key.Key == ConsoleKey.RightArrow && cursorx + width * 2 < 18) cursorx += 2;
 				if (key.Key == ConsoleKey.Enter)
 				{
 					row = (cursory - 2) / 2;
@@ -434,19 +435,37 @@ namespace PBL_SUDOKU
 				{
 					break;
 				}
-				Console.ForegroundColor = ConsoleColor.White;
 			}
-			Console.SetCursorPosition(50, 50);
-
-			Console.WriteLine("GAME OVER");
+			Console.ForegroundColor = ConsoleColor.Red;
+			Console.SetCursorPosition(29, 12);
+			Console.Write("Game is Over");
+			Console.SetCursorPosition(29, 13);
+			Console.Write("Please press ENTER to continue");
+			while (true)
+			{
+				key = Console.ReadKey(true);
+				if (key.Key == ConsoleKey.Enter)
+				{
+					break;
+				}
+			}
+			for (int i = 0; i < 20; i++)
+			{
+				Console.SetCursorPosition(0, i);
+				Console.Write("                                                           ");
+			}
+			Console.SetCursorPosition(0, 0);
+			Console.WriteLine("GAME  OVER");
+			Console.ForegroundColor = ConsoleColor.White;
+			Console.SetCursorPosition(0, 3);
 			Console.WriteLine("Please enter your name: ");
 			string name = Console.ReadLine();
+			Console.ForegroundColor = ConsoleColor.Green;
 			StreamWriter f = File.AppendText("scores.txt");
-			f.WriteLine($"{name};{point}"); // To make the sort function digit number sensitive
+			f.WriteLine($"{name};{score}"); // To make the sort function digit number sensitive
 			f.Close();
-			//Printing High Score Table
-			Console.WriteLine("_".PadRight(46, '_'));
 			Console.WriteLine("High Score Table ");
+			Console.WriteLine("_".PadRight(46, '_'));
 			//To calculate number of score&name - it will be used for many transactions later
 			int counter = 0;
 			StreamReader f2 = File.OpenText("scores.txt");
@@ -463,13 +482,38 @@ namespace PBL_SUDOKU
 				array[i] = f3.ReadLine();
 			}
 			f3.Close();
-			Array.Sort(array);
+			//initializing a few arrays for transferring
+			string[] sorted_array = new string[counter]; //final array
+			string[] numbers = new string[counter];
+			for (int k = 0; k < counter; k++)
+			{
+				string[] number = array[k].Split(";");
+				numbers[k] = number[1]; //Assinging scores to array(numbers) in order
+			}
+			int delete = 0; //index to be deleted after using
+			for (int i = 0; i < counter; i++)
+			{
+				for (int j = 0; j < counter; j++)
+				{
+					if (j == 0) //initial assignment
+					{
+						sorted_array[i] = array[j];
+						delete = 0;
+					}
+					else if (Convert.ToInt32(numbers[delete]) < Convert.ToInt32(numbers[j])) // choosing the largest number
+					{
+						sorted_array[i] = array[j];
+						delete = j;
+					}
+				}
+				numbers[delete] = "-1"; //deleting used score by assigning to zero
+			}
 			StreamWriter f4 = File.CreateText("scores.txt");
 			if (counter < 10) //printing if counter <10
 			{
 				for (int i = 0; i < counter; i++)
 				{
-					string[] s = array[i].Split(";");
+					string[] s = sorted_array[i].Split(";");
 					Console.WriteLine(s[0] + " " + s[1]);
 					f4.WriteLine($"{s[0]};{s[1]}");
 				}
@@ -478,18 +522,13 @@ namespace PBL_SUDOKU
 			{
 				for (int i = 0; i < 10; i++)
 				{
-					string[] s = array[i].Split(";");
+					string[] s = sorted_array[i].Split(";");
 					Console.WriteLine(s[0] + " " + s[1]);
 					f4.WriteLine($"{s[0]};{s[1]}");
 				}
 			}
 			f4.Close();
+			Console.ReadLine();
 		}
 	}
 }
-
-
-
-
-
-
